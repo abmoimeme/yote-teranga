@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#00853f">
+<meta name="description" content="Yoté, the strategy game of Senegal. Play online with friends.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Yoté Teranga">
+<title>Yoté Teranga</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+@font-face{font-family:"Baloo 2";font-weight:600;font-display:swap;src:url(fonts/baloo2-600.woff2) format("woff2")}
+@font-face{font-family:"Baloo 2";font-weight:800;font-display:swap;src:url(fonts/baloo2-800.woff2) format("woff2")}
+@font-face{font-family:"Figtree";font-weight:400;font-display:swap;src:url(fonts/figtree-400.woff2) format("woff2")}
+@font-face{font-family:"Figtree";font-weight:600;font-display:swap;src:url(fonts/figtree-600.woff2) format("woff2")}
+@font-face{font-family:"Figtree";font-weight:700;font-display:swap;src:url(fonts/figtree-700.woff2) format("woff2")}
+:root{
+  --green:#00853f;--green-d:#006a32;--yellow:#fdef42;--gold:#f2b705;--red:#e31b23;--red-d:#b5141b;
+  --sand:#ecd09a;--sand-l:#f7e7c3;--sand-d:#d9b577;--sand-dd:#b98d4d;--hole:#9c6f35;
+  --ink:#2a1a0c;--ink-2:#6d5335;--card:#fff9ea;--line:#e6d2a6;
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;--body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .22 0 0 0 0 .08 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.38'/%3E%3C/svg%3E");
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden}
+body{font-family:var(--body);color:var(--ink);background:var(--sand-l);-webkit-user-select:none;user-select:none}
+button{font-family:inherit;color:inherit;cursor:pointer}
+input,select{font-family:inherit;-webkit-user-select:text;user-select:text}
+
+/* flag ribbon and wax border */
+.flag{position:fixed;top:0;left:0;right:0;height:6px;z-index:30;background:linear-gradient(90deg,var(--green) 0 33.33%,var(--yellow) 33.33% 66.66%,var(--red) 66.66%)}
+.wax{height:14px;background:
+  conic-gradient(from -45deg at 50% 100%,var(--yellow) 90deg,transparent 0) 0 0/28px 100%,
+  conic-gradient(from 135deg at 50% 0,var(--red) 90deg,transparent 0) 14px 0/28px 100%,var(--green)}
+
+/* screens */
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;opacity:0;transform:translateY(18px) scale(.985);
+  pointer-events:none;transition:opacity .38s ease,transform .38s cubic-bezier(.2,.8,.2,1);overflow:hidden}
+.screen.on{opacity:1;transform:none;pointer-events:auto}
+
+/* ---------- home ---------- */
+#home{background:linear-gradient(180deg,#ffd27a 0%,#f7a24a 34%,#e9763a 52%,var(--sand) 52.2%,var(--sand-l) 100%)}
+#home .scene{position:absolute;top:0;left:0;width:100%;height:56%}
+#home .scene svg{width:100%;height:100%;display:block}
+.sun{transform-origin:50% 50%;animation:sun 7s ease-in-out infinite alternate}
+@keyframes sun{from{transform:translateY(6px)}to{transform:translateY(-6px)}}
+#home .inner{position:relative;z-index:2;width:100%;max-width:440px;height:100%;padding:calc(26px + env(safe-area-inset-top)) 20px 16px;display:flex;flex-direction:column}
+.brand{text-align:center;margin-top:4vh}
+.brand h1{font-family:var(--display);font-weight:800;font-size:76px;line-height:.9;margin:0;color:#fff;
+  text-shadow:0 3px 0 var(--red-d),0 8px 18px rgba(90,30,0,.45);letter-spacing:1px}
+.brand h1 span{display:inline-block;animation:rise .7s cubic-bezier(.2,1.3,.4,1) both}
+.brand h1 span:nth-child(2){animation-delay:.07s}.brand h1 span:nth-child(3){animation-delay:.14s}.brand h1 span:nth-child(4){animation-delay:.21s}
+@keyframes rise{from{opacity:0;transform:translateY(26px) rotate(-8deg)}to{opacity:1;transform:none}}
+.brand .ter{font-family:var(--display);font-weight:600;font-size:20px;letter-spacing:7px;color:#fff;text-transform:uppercase;margin-top:6px;text-shadow:0 2px 6px rgba(90,30,0,.5)}
+.brand .star{display:inline-block;width:26px;height:26px;margin:8px auto 0}
+.brand p{margin:6px 0 0;font-weight:700;color:#5a2606;font-size:15px}
+.menu{margin-top:auto;display:flex;flex-direction:column;gap:11px;padding-bottom:6px}
+.cta{border:0;border-radius:16px;min-height:58px;padding:8px 18px;font-family:var(--display);font-weight:800;font-size:21px;
+  display:flex;align-items:center;gap:12px;text-align:left;transition:transform .12s ease,box-shadow .12s ease;animation:up .5s cubic-bezier(.2,.8,.2,1) both}
+.cta small{display:block;font-family:var(--body);font-weight:600;font-size:12.5px;opacity:.85;line-height:1.15}
+.cta .ic{font-size:26px;width:34px;text-align:center;flex:none}
+.cta:active{transform:translateY(3px)}
+.cta.g{background:var(--green);color:#fff;box-shadow:0 5px 0 var(--green-d),0 10px 18px rgba(0,80,30,.28)}
+.cta.g:active{box-shadow:0 2px 0 var(--green-d)}
+.cta.y{background:var(--yellow);color:#3a2a00;box-shadow:0 5px 0 #c9b400,0 10px 18px rgba(120,100,0,.22)}
+.cta.y:active{box-shadow:0 2px 0 #c9b400}
+.cta.r{background:var(--red);color:#fff;box-shadow:0 5px 0 var(--red-d),0 10px 18px rgba(120,10,10,.25)}
+.cta.r:active{box-shadow:0 2px 0 var(--red-d)}
+.cta.w{background:var(--card);color:var(--ink);box-shadow:0 4px 0 var(--sand-d);min-height:48px;font-size:17px;justify-content:center}
+.menu .cta:nth-child(1){animation-delay:.15s}.menu .cta:nth-child(2){animation-delay:.22s}.menu .cta:nth-child(3){animation-delay:.29s}.menu .cta:nth-child(4){animation-delay:.36s}
+@keyframes up{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+.foot{text-align:center;font-size:11px;color:var(--ink-2);padding-top:10px;font-weight:600}
+
+/* ---------- game ---------- */
+#game{background:var(--noise),linear-gradient(180deg,var(--sand-l),var(--sand) 70%,var(--sand-d))}
+#game .inner{width:100%;max-width:540px;height:100%;display:flex;flex-direction:column;gap:8px;padding:calc(14px + env(safe-area-inset-top)) 12px calc(10px + env(safe-area-inset-bottom))}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.top h2{font-family:var(--display);font-weight:800;font-size:26px;margin:0;line-height:1;color:var(--green-d)}
+.top h2 b{color:var(--red)}
+.ib{border:0;background:var(--card);border-radius:12px;min-width:44px;height:44px;font-size:18px;font-weight:700;box-shadow:0 3px 0 var(--sand-d);transition:transform .1s}
+.ib:active{transform:translateY(2px)}
+.code{font-family:var(--display);font-weight:800;font-size:14px;background:var(--ink);color:var(--yellow);border-radius:9px;padding:3px 9px;letter-spacing:2px}
+.pl{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:16px;padding:8px 12px;border:3px solid transparent;
+  box-shadow:0 3px 0 var(--sand-d);transition:border-color .3s,box-shadow .3s,transform .3s,opacity .3s;opacity:.78}
+.pl.on{opacity:1;transform:scale(1.015)}
+#pl1.on{border-color:var(--green);box-shadow:0 3px 0 var(--green-d),0 0 0 5px rgba(0,133,63,.16)}
+#pl2.on{border-color:var(--red);box-shadow:0 3px 0 var(--red-d),0 0 0 5px rgba(227,27,35,.14)}
+.pl .tk{width:34px;height:34px;position:relative;flex:none}
+.pl .info{flex:1;min-width:0}
+.pl .nm{font-family:var(--display);font-weight:800;font-size:18px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl .sub{font-size:12px;color:var(--ink-2);font-weight:600}
+.res{display:grid;grid-template-columns:repeat(6,13px);gap:3px}
+.res i{width:13px;height:13px;border-radius:50%;transition:transform .3s,opacity .3s}
+#pl1 .res i{background:radial-gradient(circle at 35% 30%,#fff,#9aa09c 45%,#4c5552)}
+#pl2 .res i{background:linear-gradient(135deg,#b06a2c,#5a2f12);border-radius:3px;transform:rotate(38deg) scaleX(.45)}
+.res i.off{opacity:.14}
+.wn{font-family:var(--display);font-weight:800;font-size:22px;min-width:26px;text-align:center;color:var(--gold);text-shadow:0 1px 0 #8a6500}
+#status{min-height:40px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:700;font-size:15px;padding:4px 12px;border-radius:12px}
+#status span{animation:fadeUp .35s ease both}
+#status.bonus{background:var(--red);color:#fff}
+#status.mine{background:var(--green);color:#fff}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.frame{border-radius:20px;overflow:hidden;box-shadow:0 10px 26px rgba(90,55,10,.38);border:4px solid #5b3413;width:100%;margin:0 auto;max-width:calc((100vh - 350px) * 1.18);min-width:250px}
+.pit{background:var(--noise),radial-gradient(120% 100% at 30% 0,#f4dca8,var(--sand) 55%,var(--sand-d));padding:9px}
+#board{position:relative;aspect-ratio:6/5;width:100%}
+#holes{position:absolute;inset:0;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(5,1fr)}
+.hole{border:0;padding:0;background:none;position:relative}
+.hole::before{content:"";position:absolute;inset:10%;border-radius:50%;
+  background:radial-gradient(circle at 50% 30%,#7d5524 0%,var(--hole) 45%,#b98a4a 82%,#d7b377 100%);
+  box-shadow:inset 0 6px 9px rgba(50,28,4,.55),0 2px 0 rgba(255,244,214,.75);transition:box-shadow .25s}
+.hole.dest::after,.hole.cap::after{content:"";position:absolute;inset:34%;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(255,255,255,.7);animation:dot .9s ease-in-out infinite alternate;z-index:3}
+.hole.cap::after{background:var(--red)}
+@keyframes dot{from{transform:scale(.8)}to{transform:scale(1.1)}}
+.hole.last::before{box-shadow:inset 0 6px 9px rgba(50,28,4,.55),0 0 0 3px rgba(255,255,255,.85)}
+#pieces{position:absolute;inset:0;pointer-events:none}
+.pc{position:absolute;width:16.6667%;height:20%;transition:left .36s cubic-bezier(.3,.85,.3,1),top .36s cubic-bezier(.3,.85,.3,1);z-index:2}
+.pc i{position:absolute;inset:19%;display:block;transition:transform .3s cubic-bezier(.3,1.4,.5,1),opacity .3s,filter .3s}
+.pc.p1 i{border-radius:48% 52% 50% 50%/56% 50% 50% 44%;background:radial-gradient(circle at 34% 28%,#fbfbf8 0%,#b4b9b5 34%,#515a57 88%);box-shadow:0 4px 5px rgba(30,15,0,.5),inset 0 -3px 5px rgba(0,0,0,.25)}
+.pc.p2 i::before,.pc.p2 i::after{content:"";position:absolute;left:38%;right:38%;top:-12%;bottom:-12%;border-radius:7px;
+  background:linear-gradient(180deg,transparent 0 16%,var(--green) 16% 22%,var(--yellow) 22% 28%,var(--red) 28% 34%,transparent 34%),linear-gradient(90deg,#55290e,#b06a2c 45%,#6a3815);
+  box-shadow:0 4px 5px rgba(30,15,0,.5);transform:rotate(40deg)}
+.pc.p2 i::after{transform:rotate(-40deg);background:linear-gradient(90deg,#4a230c,#9a5a24 45%,#5b2f11)}
+.pc.in i{animation:drop .38s cubic-bezier(.3,1.5,.5,1) both}
+@keyframes drop{from{transform:translateY(-70%) scale(1.5);opacity:0}60%{opacity:1}to{transform:none;opacity:1}}
+.pc.hop{z-index:5}
+.pc.hop i{animation:hop .38s ease-in-out}
+@keyframes hop{50%{transform:scale(1.5) translateY(-18%)}}
+.pc.gone i{transform:scale(.05) rotate(120deg);opacity:0;transition:transform .42s ease-in,opacity .42s ease-in}
+.pc.sel{z-index:4}
+.pc.sel i{transform:translateY(-10%) scale(1.18);filter:drop-shadow(0 0 7px #fff)}
+.pc.target i{animation:tgt .6s ease-in-out infinite alternate}
+@keyframes tgt{from{transform:scale(.9);filter:drop-shadow(0 0 0 var(--red))}to{transform:scale(1.12);filter:drop-shadow(0 0 8px var(--red))}}
+.puff{position:absolute;width:16.6667%;height:20%;pointer-events:none;z-index:6}
+.puff::before{content:"";position:absolute;inset:15%;border-radius:50%;border:4px solid rgba(255,236,190,.95);animation:puff .5s ease-out forwards}
+.puff.red::before{border-color:rgba(227,27,35,.85)}
+@keyframes puff{from{transform:scale(.3);opacity:1}to{transform:scale(1.7);opacity:0}}
+.bar{display:flex;gap:8px;margin-top:auto}
+.bar .cta{flex:1;min-height:48px;font-size:17px;justify-content:center;animation:none}
+.bar .cta:disabled{opacity:.4}
+
+/* ---------- sheets ---------- */
+.ov{position:fixed;inset:0;z-index:20;background:rgba(42,26,12,0);pointer-events:none;transition:background .3s;display:flex;align-items:flex-end;justify-content:center}
+.ov.on{background:rgba(42,26,12,.55);pointer-events:auto}
+.sheet{width:100%;max-width:520px;max-height:92%;overflow:auto;background:var(--card);border-radius:24px 24px 0 0;
+  transform:translateY(105%);transition:transform .42s cubic-bezier(.2,.85,.25,1);padding-bottom:env(safe-area-inset-bottom)}
+.ov.on .sheet{transform:none}
+.sheet .bd{padding:16px 18px 20px}
+.sheet h3{font-family:var(--display);font-weight:800;font-size:24px;margin:0 0 8px;line-height:1.1}
+.sheet p,.sheet li{font-size:14.5px;line-height:1.45;margin:6px 0}
+.sheet ol{padding-left:20px;margin:6px 0}
+.note{font-size:12.5px !important;color:var(--ink-2)}
+.err{color:var(--red-d);font-weight:700}.okm{color:var(--green-d);font-weight:700}
+.row{display:flex;gap:8px;margin-top:8px}
+.fld{width:100%;height:50px;border-radius:13px;border:2px solid var(--line);background:#fff;padding:0 13px;font-size:17px;font-weight:600;color:var(--ink);min-width:0}
+.fld:focus{outline:none;border-color:var(--green)}
+select.fld{width:auto;flex:none;padding:0 8px}
+.sheet .cta{width:100%;justify-content:center;margin-top:10px;min-height:52px;font-size:19px;animation:none}
+.sheet .cta.sm{width:auto;flex:none;margin-top:0;min-height:50px;padding:0 18px}
+.big{font-family:var(--display);font-weight:800;font-size:46px;letter-spacing:8px;text-align:center;color:var(--green-d);margin:6px 0 0;line-height:1}
+.seats{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.seat{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--line);border-radius:13px;padding:9px 12px;font-weight:700}
+.seat.wait{border-style:dashed;color:var(--ink-2)}
+.dots::after{content:"";animation:dots 1.4s steps(4) infinite}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+.seg{display:flex;gap:6px;margin-top:8px}
+.seg button{flex:1;height:46px;border-radius:12px;border:2px solid var(--line);background:#fff;font-weight:700;font-size:15px}
+.seg button.on{background:var(--green);border-color:var(--green);color:#fff}
+.mini{border:0;background:none;text-decoration:underline;font-weight:700;font-size:13px;color:var(--ink-2);padding:4px}
+.trophy{font-size:62px;text-align:center;line-height:1;animation:rise .6s cubic-bezier(.2,1.4,.4,1) both}
+.center{text-align:center}
+#upd{position:fixed;left:12px;right:12px;top:calc(14px + env(safe-area-inset-top));z-index:40;max-width:500px;margin:0 auto;background:var(--ink);color:#fff;border-radius:14px;padding:10px 12px;display:none;align-items:center;gap:10px;font-weight:700;font-size:14px}
+#upd.on{display:flex}
+#upd button{margin-left:auto;border:0;border-radius:10px;background:var(--yellow);color:#2a1a0c;font-weight:800;padding:8px 12px}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:25;overflow:hidden}
+#confetti i{position:absolute;top:-20px;width:10px;height:16px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s !important;transition-duration:.01s !important}}
+@media (max-height:640px){.brand h1{font-size:58px}.cta{min-height:50px}.brand{margin-top:1vh}}
+</style>
+</head>
+<body>
+<div class="flag"></div>
+
+<section class="screen on" id="home">
+  <div class="scene" aria-hidden="true">
+    <svg viewBox="0 0 400 420" preserveAspectRatio="xMidYMax slice">
+      <circle class="sun" cx="290" cy="250" r="62" fill="#fff3b0" opacity=".9"/>
+      <circle class="sun" cx="290" cy="250" r="44" fill="#fffbe0"/>
+      <path d="M0 330 Q90 290 190 322 T400 310 V420 H0Z" fill="#c9652e" opacity=".55"/>
+      <g fill="#4a210b" stroke="#4a210b" stroke-linecap="round">
+        <path d="M58 392 C62 350 60 318 56 286 L84 286 C80 318 80 350 86 392Z"/>
+        <g fill="none" stroke-width="7"><path d="M62 290 C52 262 34 252 16 250"/><path d="M68 288 C66 256 56 236 44 222"/><path d="M74 288 C76 254 88 236 104 226"/><path d="M80 290 C92 266 112 258 128 258"/></g>
+        <g fill="none" stroke-width="3.5"><path d="M30 252 C24 240 16 236 8 236"/><path d="M48 228 C46 216 40 210 32 206"/><path d="M98 230 C102 218 110 212 118 210"/><path d="M116 258 C124 250 132 248 140 250"/><path d="M52 240 C60 230 62 222 60 212"/><path d="M88 242 C84 230 86 222 92 214"/></g>
+        <path d="M330 372 C332 348 331 330 329 314 L343 314 C341 330 341 348 344 372Z" opacity=".8"/>
+        <g fill="none" stroke-width="3.6" opacity=".8"><path d="M332 316 C326 300 316 294 306 292"/><path d="M336 314 C335 298 330 288 324 280"/><path d="M339 314 C341 298 348 288 356 284"/><path d="M342 316 C348 304 358 300 368 300"/></g>
+      </g>
+      <path d="M0 372 Q110 338 220 368 T400 356 V420 H0Z" fill="#ecd09a"/>
+      <path d="M0 396 Q140 372 260 394 T400 388 V420 H0Z" fill="#f2dcae"/>
+    </svg>
+  </div>
+  <div class="inner">
+    <div class="brand">
+      <h1><span>Y</span><span>o</span><span>t</span><span>é</span></h1>
+      <div class="ter">Teranga</div>
+      <svg class="star" viewBox="0 0 24 24"><path fill="#00853f" stroke="#fff" stroke-width="1.2" stroke-linejoin="round" d="M12 1.8l2.9 6.6 7.1.7-5.4 4.7 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.1l7.1-.7z"/></svg>
+      <p id="tag"></p>
+    </div>
+    <div class="menu">
+      <button class="cta g" id="hOnline"><span class="ic">🌍</span><span><span id="hOnlineT"></span><small id="hOnlineS"></small></span></button>
+      <button class="cta y" id="h2p"><span class="ic">🤝</span><span><span id="h2pT"></span><small id="h2pS"></small></span></button>
+      <button class="cta r" id="hAi"><span class="ic">🧠</span><span><span id="hAiT"></span><small id="hAiS"></small></span></button>
+      <button class="cta w" id="hRules"></button>
+    </div>
+    <div class="foot">© 2026 Nioro Resources LLC</div>
+  </div>
+</section>
+
+<section class="screen" id="game">
+  <div class="inner">
+    <div class="top">
+      <button class="ib" id="gMenu" aria-label="Menu">☰</button>
+      <h2>Yo<b>té</b></h2>
+      <span class="code" id="gCode" style="visibility:hidden">······</span>
+      <button class="ib" id="gSound" aria-label="Sound">🔊</button>
+    </div>
+    <div class="pl" id="pl2"><div class="tk"><div class="pc p2" style="position:absolute;inset:0;width:auto;height:auto"><i style="inset:8%"></i></div></div>
+      <div class="info"><div class="nm" id="n2"></div><div class="sub" id="s2"></div></div><div class="res" id="r2"></div><div class="wn" id="w2">0</div></div>
+    <div id="status"></div>
+    <div class="frame"><div class="wax"></div><div class="pit"><div id="board"><div id="holes"></div><div id="pieces"></div></div></div><div class="wax"></div></div>
+    <div class="pl" id="pl1"><div class="tk"><div class="pc p1" style="position:absolute;inset:0;width:auto;height:auto"><i style="inset:8%"></i></div></div>
+      <div class="info"><div class="nm" id="n1"></div><div class="sub" id="s1"></div></div><div class="res" id="r1"></div><div class="wn" id="w1">0</div></div>
+    <div class="bar">
+      <button class="cta w" id="gUndo"></button>
+      <button class="cta w" id="gRules"></button>
+    </div>
+  </div>
+</section>
+
+<div class="ov" id="ovOnline"><div class="sheet"><div class="wax"></div><div class="bd" id="onBody"></div></div></div>
+<div class="ov" id="ovRules"><div class="sheet"><div class="wax"></div><div class="bd"><h3 id="ruT"></h3><div id="ruB"></div><button class="cta g" id="ruX"></button></div></div></div>
+<div class="ov" id="ovMenu"><div class="sheet"><div class="wax"></div><div class="bd">
+  <h3 id="mnT"></h3>
+  <div class="seg" id="mnLang"><button data-l="fr">Français</button><button data-l="en">English</button><button data-l="it">Italiano</button></div>
+  <button class="cta w" id="mnBack"></button>
+  <button class="cta r" id="mnQuit"></button>
+</div></div></div>
+<div class="ov" id="ovEnd"><div class="sheet"><div class="wax"></div><div class="bd center">
+  <div class="trophy" id="enI"></div><h3 id="enT"></h3><p id="enS"></p>
+  <button class="cta g" id="enAgain"></button><button class="cta w" id="enHome"></button>
+</div></div></div>
+<div id="upd"><span id="updT"></span><button id="updGo"></button></div>
+<div id="confetti"></div>
+
+<script src="config.js"></script>
+<script>
+(function(){
+"use strict";
+var BUILD="1";
+var R=5,C=6,N=30,DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function lget(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lset(k,v){try{if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){}}
+
+/* ---------- languages ---------- */
+var T={
+fr:{tag:"Le jeu de stratégie du Sénégal",online:"Jouer en ligne",onlineS:"Partie privée avec un code",local:"2 joueurs",localS:"Sur le même téléphone",cpu:"Contre l'ordinateur",cpuS:"Entraînez-vous seul",rules:"Règles du jeu",close:"Compris",
+ undo:"↩ Annuler",menu:"Menu",back:"Retour au jeu",quit:"Quitter la partie",hand:"En main",cap:"Pris",p1:"Joueur 1",p2:"Joueur 2",cpuN:"Ordinateur",
+ turn:function(n){return "À "+n+" de jouer"},yours:"À vous de jouer",think:function(n){return n+" réfléchit…"},bonus:function(n){return n+" retire un 2ᵉ pion"},bonusYou:"Touchez un 2ᵉ pion adverse à retirer",
+ win:function(n){return n+" gagne !"},youWin:"Vous gagnez !",draw:"Match nul",drawS:"Chaque joueur a 3 pions ou moins.",winS:"Tous les pions adverses sont pris.",blockS:"L'adversaire ne peut plus jouer.",leftS:"L'adversaire a quitté la partie.",
+ again:"Rejouer",home:"Accueil",acct:"Votre compte",name:"Votre nom",phone:"Numéro de téléphone",signIn:"Se connecter",signedIn:function(h){return "Connecté · numéro finissant par "+h},signOut:"Se déconnecter",
+ acctNote:"Votre numéro est votre identifiant sur n'importe quel téléphone. C'est le même compte que Ludo Teranga. Les autres joueurs ne le voient jamais.",
+ welcome:function(n){return "Bon retour, "+n+" !"},made:"Compte créé.",errPhone:"Ce numéro ne semble pas correct. Choisissez votre pays et écrivez le numéro.",errName:"Écrivez d'abord votre nom.",
+ errNet:"Connexion impossible. Vérifiez internet et réessayez.",errNoRoom:"Aucune partie avec ce code.",errFull:"Cette partie est déjà complète.",errOff:"Les comptes ne sont pas encore activés. Vous pouvez jouer sans vous connecter.",
+ create:"Créer une partie privée",join:"Rejoindre",codePh:"Code",orJoin:"Ou entrez le code d'un ami :",yourCode:"Code de la partie",share:"Inviter un ami",shareTxt:function(c){return "Viens jouer au Yoté avec moi ! Code : "+c},copied:"Lien copié.",
+ waiting:"En attente d'un adversaire",leave:"Quitter",you:"vous",starting:"La partie commence…",waitOpp:function(n){return "En attente de "+n},upd:"Nouvelle version disponible.",updGo:"Mettre à jour",
+ rb:"<ol><li>Le plateau a 5 rangées de 6 trous et commence vide. Chaque joueur a 12 pions : cailloux contre bâtonnets.</li><li>À votre tour, faites <b>une</b> action : poser un pion dans un trou vide, <b>ou</b> déplacer un pion d'une case (jamais en diagonale).</li><li><b>Prise :</b> sautez par-dessus un pion adverse voisin vers le trou vide juste derrière.</li><li><b>La règle du Yoté :</b> après chaque prise, retirez un <b>deuxième</b> pion adverse de votre choix (s'il n'y en a plus sur le plateau, il est pris dans sa main).</li><li>La prise n'est jamais obligatoire, et vous pouvez garder des pions en main.</li><li>Gagne celui qui prend tous les pions adverses. Si les deux joueurs ont 3 pions ou moins, c'est match nul.</li></ol><p><b>Pour jouer :</b> touchez un trou vide pour poser. Touchez un de vos pions, puis un point vert (déplacer) ou rouge (prendre).</p>"},
+en:{tag:"Senegal's game of strategy",online:"Play online",onlineS:"Private game with a code",local:"2 players",localS:"On the same phone",cpu:"Vs computer",cpuS:"Practice on your own",rules:"How to play",close:"Got it",
+ undo:"↩ Undo",menu:"Menu",back:"Back to game",quit:"Leave game",hand:"In hand",cap:"Captured",p1:"Player 1",p2:"Player 2",cpuN:"Computer",
+ turn:function(n){return n+" to play"},yours:"Your turn",think:function(n){return n+" is thinking…"},bonus:function(n){return n+" removes a 2nd piece"},bonusYou:"Tap a 2nd opponent piece to remove",
+ win:function(n){return n+" wins!"},youWin:"You win!",draw:"Draw",drawS:"Both players have 3 pieces or fewer.",winS:"All opponent pieces are captured.",blockS:"The opponent has no move left.",leftS:"The opponent left the game.",
+ again:"Play again",home:"Home",acct:"Your account",name:"Your name",phone:"Phone number",signIn:"Sign in",signedIn:function(h){return "Signed in · number ending in "+h},signOut:"Sign out",
+ acctNote:"Your phone number is your login on any phone. It is the same account as Ludo Teranga. It is never shown to other players.",
+ welcome:function(n){return "Welcome back, "+n+"!"},made:"Account created.",errPhone:"That phone number does not look right. Choose your country and type the number.",errName:"Type your name first.",
+ errNet:"Could not connect. Check your internet and try again.",errNoRoom:"No game with that code.",errFull:"That game is already full.",errOff:"Accounts are not switched on yet. You can play without signing in.",
+ create:"Create a private game",join:"Join",codePh:"Code",orJoin:"Or enter a friend's code:",yourCode:"Game code",share:"Invite a friend",shareTxt:function(c){return "Come play Yoté with me! Code: "+c},copied:"Link copied.",
+ waiting:"Waiting for an opponent",leave:"Leave",you:"you",starting:"The game is starting…",waitOpp:function(n){return "Waiting for "+n},upd:"A new version is available.",updGo:"Update",
+ rb:"<ol><li>The board has 5 rows of 6 holes and starts empty. Each player has 12 pieces: pebbles against sticks.</li><li>On your turn, do <b>one</b> thing: place a piece in an empty hole, <b>or</b> move a piece one step (never diagonally).</li><li><b>Capture:</b> jump over a neighbouring opponent piece into the empty hole right behind it.</li><li><b>The Yoté rule:</b> after every capture, remove a <b>second</b> opponent piece of your choice (if none is left on the board, it comes from their hand).</li><li>Capturing is never forced, and you may keep pieces in hand.</li><li>You win by taking every opponent piece. If both players have 3 pieces or fewer, it is a draw.</li></ol><p><b>To play:</b> tap an empty hole to place. Tap one of your pieces, then a green dot (move) or red dot (capture).</p>"},
+it:{tag:"Il gioco di strategia del Senegal",online:"Gioca online",onlineS:"Partita privata con un codice",local:"2 giocatori",localS:"Sullo stesso telefono",cpu:"Contro il computer",cpuS:"Allenati da solo",rules:"Regole del gioco",close:"Capito",
+ undo:"↩ Annulla",menu:"Menu",back:"Torna al gioco",quit:"Lascia la partita",hand:"In mano",cap:"Presi",p1:"Giocatore 1",p2:"Giocatore 2",cpuN:"Computer",
+ turn:function(n){return "Tocca a "+n},yours:"Tocca a te",think:function(n){return n+" sta pensando…"},bonus:function(n){return n+" toglie una 2ª pedina"},bonusYou:"Tocca una 2ª pedina avversaria da togliere",
+ win:function(n){return n+" vince!"},youWin:"Hai vinto!",draw:"Pareggio",drawS:"Entrambi i giocatori hanno 3 pedine o meno.",winS:"Tutte le pedine avversarie sono prese.",blockS:"L'avversario non può più muovere.",leftS:"L'avversario ha lasciato la partita.",
+ again:"Gioca ancora",home:"Home",acct:"Il tuo account",name:"Il tuo nome",phone:"Numero di telefono",signIn:"Accedi",signedIn:function(h){return "Connesso · numero che finisce con "+h},signOut:"Esci",
+ acctNote:"Il tuo numero è il tuo accesso su qualsiasi telefono. È lo stesso account di Ludo Teranga. Gli altri giocatori non lo vedono mai.",
+ welcome:function(n){return "Bentornato, "+n+"!"},made:"Account creato.",errPhone:"Questo numero non sembra corretto. Scegli il paese e scrivi il numero.",errName:"Scrivi prima il tuo nome.",
+ errNet:"Connessione non riuscita. Controlla internet e riprova.",errNoRoom:"Nessuna partita con questo codice.",errFull:"Questa partita è già al completo.",errOff:"Gli account non sono ancora attivi. Puoi giocare senza accedere.",
+ create:"Crea una partita privata",join:"Entra",codePh:"Codice",orJoin:"Oppure inserisci il codice di un amico:",yourCode:"Codice della partita",share:"Invita un amico",shareTxt:function(c){return "Vieni a giocare a Yoté con me! Codice: "+c},copied:"Link copiato.",
+ waiting:"In attesa di un avversario",leave:"Esci",you:"tu",starting:"La partita sta per iniziare…",waitOpp:function(n){return "In attesa di "+n},upd:"È disponibile una nuova versione.",updGo:"Aggiorna",
+ rb:"<ol><li>Il tavoliere ha 5 file di 6 buche e inizia vuoto. Ogni giocatore ha 12 pedine: sassi contro bastoncini.</li><li>Al tuo turno fai <b>una</b> cosa: metti una pedina in una buca vuota, <b>oppure</b> muovi una pedina di un passo (mai in diagonale).</li><li><b>Presa:</b> salta una pedina avversaria vicina e atterra nella buca vuota subito dietro.</li><li><b>La regola dello Yoté:</b> dopo ogni presa togli una <b>seconda</b> pedina avversaria a tua scelta (se non ce ne sono sul tavoliere, viene presa dalla sua mano).</li><li>La presa non è mai obbligatoria e puoi tenere pedine in mano.</li><li>Vince chi prende tutte le pedine avversarie. Se entrambi hanno 3 pedine o meno, è pareggio.</li></ol><p><b>Per giocare:</b> tocca una buca vuota per mettere. Tocca una tua pedina, poi un punto verde (muovere) o rosso (prendere).</p>"}
+};
+var lang=lget("yote-lang")||(function(){var l=(navigator.language||"fr").slice(0,2);return T[l]?l:"fr"})();
+function L(){return T[lang]}
+function langOfPhone(num){return num.indexOf("+221")===0||num.indexOf("+33")===0?"fr":num.indexOf("+39")===0?"it":num.indexOf("+1")===0?"en":""}
+
+/* ---------- sound ---------- */
+var sound=lget("yote-sound")!=="0",ac=null;
+function tone(f,d,type,v,delay,f2){
+  if(!sound)return;
+  try{
+    if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();
+    if(ac.state==="suspended")ac.resume();
+    var t0=ac.currentTime+(delay||0),o=ac.createOscillator(),g=ac.createGain();
+    o.type=type||"sine";o.frequency.setValueAtTime(f,t0);
+    if(f2)o.frequency.exponentialRampToValueAtTime(f2,t0+d);
+    g.gain.setValueAtTime(v||.25,t0);g.gain.exponentialRampToValueAtTime(.001,t0+d);
+    o.connect(g);g.connect(ac.destination);o.start(t0);o.stop(t0+d+.02);
+  }catch(e){}
+}
+function sfx(k){
+  if(k==="place")tone(190,.13,"sine",.55,0,70);
+  else if(k==="move")tone(330,.09,"triangle",.3,0,210);
+  else if(k==="cap"){tone(540,.09,"square",.16);tone(180,.22,"sine",.55,.08,60)}
+  else if(k==="bonus")tone(150,.26,"sawtooth",.2,0,50);
+  else if(k==="tap")tone(420,.05,"triangle",.18);
+  else if(k==="win")[392,523,659,784,1047].forEach(function(f,i){tone(f,.24,"triangle",.3,i*.12)});
+  else if(k==="lose"){tone(392,.25,"triangle",.28);tone(311,.4,"triangle",.28,.2)}
+  else if(k==="join"){tone(523,.12,"triangle",.3);tone(784,.2,"triangle",.3,.12)}
+}
+
+/* ---------- rules engine ---------- */
+function cnt(b,p){var n=0;for(var i=0;i<N;i++)if(b[i]===p)n++;return n}
+function tot(s,p){return s.hand[p]+cnt(s.b,p)}
+function actions(b,hand,p,from){
+  var o=3-p,res=[],i,d,r,c,r1,c1,j,r2,c2,k;
+  for(i=0;i<N;i++){
+    if(from===undefined&&b[i]===0&&hand[p]>0)res.push({k:"place",from:-1,over:-1,to:i});
+    if(b[i]!==p||(from!==undefined&&from!==i))continue;
+    r=Math.floor(i/C);c=i%C;
+    for(d=0;d<4;d++){
+      r1=r+DIRS[d][0];c1=c+DIRS[d][1];
+      if(r1<0||r1>=R||c1<0||c1>=C)continue;
+      j=r1*C+c1;
+      if(b[j]===0)res.push({k:"move",from:i,over:-1,to:j});
+      else if(b[j]===o){
+        r2=r1+DIRS[d][0];c2=c1+DIRS[d][1];
+        if(r2<0||r2>=R||c2<0||c2>=C)continue;
+        k=r2*C+c2;
+        if(b[k]===0)res.push({k:"cap",from:i,over:j,to:k});
+      }
+    }
+  }
+  return res;
+}
+function fresh(starter,wins){
+  var b=[];for(var i=0;i<N;i++)b.push(0);
+  return {b:b,hand:[0,12,12],capd:[0,0,0],turn:starter,phase:"play",over:null,last:-1,wins:wins||[0,0,0],fx:null};
+}
+var S=null,mode="",sel=-1,hist=[],busy=false,gid=0,starter=2;
+// Plays one action for the player to move. Returns true when a second piece must still be chosen.
+function doAction(a){
+  var p=S.turn,o=3-p;
+  S.fx={k:a.k,from:a.from,over:a.over,to:a.to,rm:-1};S.last=a.to;
+  if(a.k==="place"){S.b[a.to]=p;S.hand[p]--;return false}
+  S.b[a.from]=0;S.b[a.to]=p;
+  if(a.k==="cap"){
+    S.b[a.over]=0;S.capd[p]++;
+    if(cnt(S.b,o)>0)return true;
+    if(S.hand[o]>0){S.hand[o]--;S.capd[p]++}
+  }
+  return false;
+}
+function doBonus(i){var p=S.turn;S.b[i]=0;S.capd[p]++;S.fx={k:"bonus",from:-1,over:-1,to:-1,rm:i}}
+function endTurn(){
+  var p=S.turn,o=3-p;
+  S.phase="play";
+  if(tot(S,o)===0)S.over={w:p,why:"winS"};
+  else if(tot(S,1)<=3&&tot(S,2)<=3)S.over={w:0,why:"drawS"};
+  else{S.turn=o;if(!actions(S.b,S.hand,o).length)S.over={w:p,why:"blockS"}}
+  if(S.over&&S.over.w)S.wins[S.over.w]++;
+}
+
+/* ---------- identity and account (shared with Ludo Teranga) ---------- */
+var DB=((window.YOTE_CONFIG&&window.YOTE_CONFIG.databaseURL)||"").replace(/\/+$/,"");
+var myId=lget("ludo-id"),myFc=lget("ludo-fc")||"",acct=null,acctOff=false,myName="",onErr="",onNote="";
+function newCode(){var A="ABCDEFGHJKMNPQRSTUVWXYZ23456789",c="";for(var i=0;i<6;i++)c+=A.charAt(Math.floor(Math.random()*A.length));return c}
+function newId(){return "p"+Math.random().toString(36).slice(2,10)+Date.now().toString(36)}
+if(!myId){myId=newId();lset("ludo-id",myId)}
+if(!/^[A-Z0-9]{8}$/.test(myFc)){myFc=newCode()+newCode().slice(0,2);lset("ludo-fc",myFc)}
+try{acct=JSON.parse(lget("ludo-acct")||"null")}catch(e){acct=null}
+if(acct&&!acct.aid)acct=null;
+myName=(lget("yote-name")||"").trim();
+if(!myName){try{var lc=JSON.parse(lget("ludo-cfg2")||"null");if(lc&&lc.me&&lc.me.name)myName=String(lc.me.name).trim().slice(0,12)}catch(e){}}
+if(!myName&&acct&&acct.name)myName=String(acct.name).slice(0,12);
+function setName(n){myName=String(n||"").trim().slice(0,12);lset("yote-name",myName)}
+var CCS=[["221","🇸🇳 +221"],["1","🇺🇸 +1"],["33","🇫🇷 +33"],["39","🇮🇹 +39"],["other","+ …"]];
+function guessCc(){
+  var tz="";try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||""}catch(e){}
+  if(tz==="Europe/Paris")return "33";if(tz==="Europe/Rome")return "39";if(tz.indexOf("America/")===0)return "1";return "221";
+}
+function normPhone(cc,raw){
+  raw=String(raw||"").trim();
+  var d=raw.replace(/\D/g,""),full;
+  if(raw.charAt(0)==="+")full=d;
+  else if(raw.indexOf("00")===0)full=d.slice(2);
+  else if(cc==="other")full=d;
+  else{
+    if(cc==="1"&&d.length===11&&d.charAt(0)==="1")d=d.slice(1);
+    if(cc==="33"||cc==="221"||cc==="1")d=d.replace(/^0+/,"");
+    full=cc+d;
+  }
+  var ok=full.length>=8&&full.length<=15;
+  if(full.indexOf("221")===0)ok=full.length===12;
+  else if(full.indexOf("33")===0)ok=full.length===11;
+  else if(full.indexOf("39")===0)ok=full.length>=11&&full.length<=13;
+  else if(full.charAt(0)==="1")ok=full.length===11;
+  return ok?"+"+full:"";
+}
+// Same scrambling as Ludo Teranga, so one phone number is one account in both games.
+function scramble(s){
+  return crypto.subtle.digest("SHA-256",new TextEncoder().encode("ludo-teranga:"+s)).then(function(b){
+    return Array.prototype.map.call(new Uint8Array(b),function(x){return ("0"+x.toString(16)).slice(-2)}).join("").slice(0,40);
+  });
+}
+function dbx(method,path,body){
+  return fetch(DB+path+".json",{method:method,headers:{"Content-Type":"application/json"},body:body===undefined?undefined:JSON.stringify(body)})
+    .then(function(r){if(!r.ok){var er=new Error("net");er.status=r.status;throw er}return r.json()});
+}
+function signIn(cc,raw){
+  var num=normPhone(cc,raw);onErr="";onNote="";
+  if(!num){onErr=L().errPhone;renderOnline();return}
+  if(!DB||!window.crypto||!crypto.subtle){onErr=L().errNet;renderOnline();return}
+  var lp=langOfPhone(num);if(lp&&!lget("yote-lang")){lang=lp;applyLang()}
+  scramble(num).then(function(aid){
+    return dbx("GET","/accounts/"+aid).then(function(d){
+      if(d&&d.id&&d.fc){
+        if(/^p[a-z0-9]{6,40}$/.test(d.id)){myId=d.id;lset("ludo-id",myId)}
+        if(/^[A-Z0-9]{8}$/.test(d.fc)){myFc=d.fc;lset("ludo-fc",myFc)}
+        if(d.name)setName(d.name);
+        acct={aid:aid,hint:num.slice(-2),t:0,name:d.name||myName};lset("ludo-acct",JSON.stringify(acct));
+        onNote=L().welcome(myName);
+      }else{
+        if(!myName){onErr=L().errName;renderOnline();return}
+        var doc={id:myId,fc:myFc,name:myName,av:{t:"e",v:"🦁"},pts:1000,games:0,wins:0,caps:0,best:0,run:0,day:"",friends:[],t:Date.now()};
+        return dbx("PUT","/accounts/"+aid,doc).then(function(){
+          acct={aid:aid,hint:num.slice(-2),t:0,name:myName};lset("ludo-acct",JSON.stringify(acct));onNote=L().made;
+          afterSign();
+        });
+      }
+      afterSign();
+    });
+  }).catch(function(e){
+    if(e&&(e.status===401||e.status===403)){acctOff=true;onErr=L().errOff}else onErr=L().errNet;
+    renderOnline();
+  });
+}
+function afterSign(){renderOnline();if(pendingCode&&myName&&!net)joinRoom(pendingCode)}
+function signOut(){
+  acct=null;lset("ludo-acct",null);myId=newId();myFc=newCode()+newCode().slice(0,2);
+  lset("ludo-id",myId);lset("ludo-fc",myFc);onNote="";onErr="";renderOnline();
+}
+
+/* ---------- online play: private games through the shared realtime database ---------- */
+// Yoté games live beside Ludo games. The version number keeps a Ludo phone from opening a Yoté game by mistake.
+var PROTO=9,net=null,pendingCode="";
+try{pendingCode=(new URLSearchParams(location.search).get("room")||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6)}catch(e){}
+function roomUrl(code,path){return DB+"/rooms/"+code+(path||"")+".json"}
+function api(method,path,body,code){
+  return fetch(roomUrl(code||net.code,path),{method:method,headers:{"Content-Type":"application/json"},body:body===undefined?undefined:JSON.stringify(body)})
+    .then(function(r){if(!r.ok)throw new Error("net");return r.json()});
+}
+function seatAt(r,i){return (r&&r.seats&&r.seats[i])||null}
+function mySeat(r){for(var i=0;i<2;i++){var s=seatAt(r,i);if(s&&s.id===myId)return i}return -1}
+function me(){return net?mySeat(net.room)+1:0}
+function createRoom(tries){
+  if(!DB){onErr=L().errNet;renderOnline();return}
+  var code=newCode(),room={v:PROTO,app:"yote",host:myId,created:Date.now(),status:"lobby",round:0,cfg:{count:2},seats:{0:{id:myId,name:myName,fc:myFc}}};
+  onErr="";busyNet(true);
+  api("GET","",undefined,code).then(function(x){
+    if(x){if((tries||0)<3){createRoom((tries||0)+1);return}throw new Error("taken")}
+    return api("PUT","",room,code).then(function(){busyNet(false);enter(code,room)});
+  }).catch(function(){busyNet(false);onErr=L().errNet;renderOnline()});
+}
+function joinRoom(code,quiet){
+  code=String(code||"").toUpperCase().replace(/[^A-Z0-9]/g,"");onErr="";
+  if(!DB){if(!quiet){onErr=L().errNet;renderOnline()}return}
+  if(code.length!==6){onErr=L().errNoRoom;renderOnline();return}
+  busyNet(true);
+  api("GET","",undefined,code).then(function(r){
+    busyNet(false);
+    if(!r||r.app!=="yote"){lset("yote-room",null);if(!quiet){onErr=L().errNoRoom;renderOnline()}return}
+    if(mySeat(r)>=0){pendingCode="";enter(code,r);return}
+    if(quiet){lset("yote-room",null);return}
+    if(seatAt(r,1)||r.status!=="lobby"){onErr=L().errFull;renderOnline();return}
+    var seat={id:myId,name:myName,fc:myFc};
+    return api("PUT","/seats/1",seat,code).then(function(){
+      if(!r.seats)r.seats={};r.seats[1]=seat;pendingCode="";enter(code,r);
+    });
+  }).catch(function(){busyNet(false);if(!quiet){onErr=L().errNet;renderOnline()}});
+}
+var netBusy=false;
+function busyNet(v){netBusy=v;var b=document.querySelectorAll("#onBody .cta");for(var i=0;i<b.length;i++)b[i].disabled=v}
+function enter(code,room){
+  leaveLocal();
+  net={code:code,room:room,es:null,n:-1,round:-1,out:null,sending:false,poll:null,starting:0,had2:false};
+  lset("yote-room",code);
+  openStream();
+  net.poll=setInterval(function(){
+    if(!net)return;var n=net;
+    api("GET","").then(function(r){if(net!==n)return;if(!r){roomGone();return}net.room=r;onRoom()}).catch(function(){});
+  },window.EventSource?5000:2000);
+  onRoom();
+}
+function setPath(path,val){
+  var parts=String(path).split("/").filter(Boolean);
+  if(!parts.length){net.room=val;return}
+  var o=net.room=net.room||{};
+  for(var i=0;i<parts.length-1;i++){if(o[parts[i]]===null||typeof o[parts[i]]!=="object")o[parts[i]]={};o=o[parts[i]]}
+  if(val===null)delete o[parts[parts.length-1]];else o[parts[parts.length-1]]=val;
+}
+function openStream(){
+  if(!window.EventSource)return;
+  var es;try{es=net.es=new EventSource(roomUrl(net.code))}catch(e){return}
+  es.addEventListener("put",function(m){if(!net||net.es!==es)return;var d=JSON.parse(m.data);setPath(d.path,d.data);if(!net.room){roomGone();return}onRoom()});
+  es.addEventListener("patch",function(m){
+    if(!net||net.es!==es)return;
+    var d=JSON.parse(m.data),base=d.path==="/"?"":d.path;
+    Object.keys(d.data||{}).forEach(function(k){setPath(base+"/"+k,d.data[k])});onRoom();
+  });
+}
+function roomGone(){leaveLocal();onErr=L().errNoRoom;if(mode==="net"){mode="";show("home")}openOnline()}
+function leaveLocal(){
+  if(!net)return;
+  if(net.es){try{net.es.close()}catch(e){}}
+  clearInterval(net.poll);net=null;lset("yote-room",null);$("gCode").style.visibility="hidden";
+}
+function leaveRoom(){
+  if(!net)return;
+  var r=net.room,code=net.code,seat=mySeat(r);
+  if(r.status==="lobby"){
+    if(r.host===myId)api("DELETE","",undefined,code).catch(function(){});
+    else if(seat>=0)api("PUT","/seats/"+seat,null,code).catch(function(){});
+  }else if(mode==="net"&&S&&!S.over&&seat>=0){
+    // leaving in the middle of a game gives the game to the other player
+    var w=2-seat;S.over={w:w,why:"leftS"};S.wins[w]++;S.fx=null;
+    api("PUT","/st",{n:net.n+1,round:net.round,s:JSON.stringify(S)},code).catch(function(){});
+  }
+  leaveLocal();
+}
+function startRound(){
+  if(!net||Date.now()-net.starting<3000)return;
+  net.starting=Date.now();
+  var r=net.room,round=(r.round||0)+1,wins=(mode==="net"&&S&&S.wins)?S.wins.slice():[0,0,0];
+  var st=fresh(round%2===1?1:2,wins),doc={n:0,round:round,s:JSON.stringify(st)};
+  api("PATCH","",{status:"playing",round:round,st:doc}).then(function(){
+    if(!net)return;net.room.status="playing";net.room.round=round;net.room.st=doc;onRoom();
+  }).catch(function(){if(net)net.starting=0});
+}
+function onRoom(){
+  var r=net.room;
+  if(!r||r.app!=="yote"){roomGone();return}
+  var both=!!(seatAt(r,0)&&seatAt(r,1));
+  if(both&&!net.had2){net.had2=true;sfx("join")}
+  if(r.status==="lobby"){
+    if(mySeat(r)<0){roomGone();return}
+    if(both&&r.host===myId)startRound();
+    openOnline();return;
+  }
+  var st=r.st;if(!st||typeof st.s!=="string")return;
+  if(st.round>net.round||(st.round===net.round&&st.n>net.n)){
+    if(net.out&&st.round===net.round&&st.n<=net.out.n)return;
+    var newRound=st.round!==net.round,ns;
+    try{ns=JSON.parse(st.s)}catch(e){return}
+    net.round=st.round;net.n=st.n;
+    adopt(ns,newRound);
+  }
+}
+// Shows a position that arrived from the other phone.
+function adopt(ns,newRound){
+  var wasOver=S&&S.over;
+  S=ns;sel=-1;busy=false;hist=[];
+  if(mode!=="net"||newRound){
+    mode="net";gid++;clearPieces();closeAll();show("game");
+    $("gCode").textContent=net.code;$("gCode").style.visibility="visible";
+    syncPieces(null);render();if(S.over)finishUI();return;
+  }
+  var fx=S.fx;
+  if(fx){sfx(fx.k)}
+  syncPieces(fx);render();
+  if(S.over&&!wasOver)finishUI();
+}
+function push(){
+  if(!net)return;
+  net.n++;net.out={n:net.n,round:net.round,s:JSON.stringify(S)};flush();
+}
+function flush(){
+  if(!net||!net.out||net.sending)return;
+  var d=net.out,n=net;n.sending=true;
+  api("PUT","/st",d).then(function(){n.sending=false;if(n.out===d)n.out=null;else if(net===n)flush()})
+    .catch(function(){n.sending=false;setTimeout(function(){if(net===n)flush()},1500)});
+}
+function shareRoom(){
+  var url=location.origin+location.pathname+"?room="+net.code,txt=L().shareTxt(net.code),note=$("shNote");
+  function showN(m){if(note)note.textContent=m}
+  if(navigator.share){navigator.share({title:"Yoté Teranga",text:txt,url:url}).catch(function(){});return}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt+" "+url).then(function(){showN(L().copied)},function(){showN(url)});return}
+  showN(url);
+}
+
+/* ---------- online sheet ---------- */
+function openOnline(){renderOnline();$("ovOnline").classList.add("on")}
+function renderOnline(){
+  var t=L(),h="",r=net&&net.room;
+  if(net&&r&&r.status==="lobby"){
+    var s0=seatAt(r,0),s1=seatAt(r,1);
+    h+='<h3>'+t.yourCode+'</h3><div class="big">'+esc(net.code)+'</div>';
+    h+='<div class="seats"><div class="seat">🪨 '+esc(s0?s0.name:"")+(s0&&s0.id===myId?' <span class="note">('+t.you+')</span>':"")+'</div>';
+    h+=s1?'<div class="seat">🪵 '+esc(s1.name)+(s1.id===myId?' <span class="note">('+t.you+')</span>':"")+'</div>':'<div class="seat wait"><span class="dots">'+t.waiting+'</span></div>';
+    h+='</div>';
+    if(s1)h+='<p class="okm center">'+t.starting+'</p>';
+    else h+='<button class="cta g" id="onShare">📨 '+t.share+'</button><p class="note center" id="shNote"></p>';
+    h+='<button class="cta w" id="onLeave">'+t.leave+'</button>';
+  }else{
+    h+='<h3>'+t.online+'</h3>';
+    h+='<input class="fld" id="onName" maxlength="12" placeholder="'+t.name+'" value="'+esc(myName)+'" autocomplete="nickname">';
+    if(!acct&&!acctOff){
+      var cc=guessCc();
+      h+='<div class="row"><select class="fld" id="onCc">'+CCS.map(function(c){return '<option value="'+c[0]+'"'+(c[0]===cc?" selected":"")+'>'+c[1]+'</option>'}).join("")+'</select>';
+      h+='<input class="fld" id="onPh" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="'+t.phone+'"></div>';
+      h+='<button class="cta g" id="onSign">'+t.signIn+'</button><p class="note">'+t.acctNote+'</p>';
+    }else{
+      if(acct)h+='<p class="note">'+t.signedIn(esc(acct.hint||""))+' <button class="mini" id="onOut">'+t.signOut+'</button></p>';
+      h+='<button class="cta g" id="onCreate">➕ '+t.create+'</button>';
+      h+='<p class="note" style="margin-top:14px">'+t.orJoin+'</p><div class="row" style="margin-top:4px"><input class="fld" id="onCode" maxlength="6" placeholder="'+t.codePh+'" value="'+esc(pendingCode)+'" autocapitalize="characters" autocomplete="off" style="text-transform:uppercase;letter-spacing:4px;font-weight:700">';
+      h+='<button class="cta y sm" id="onJoin">'+t.join+'</button></div>';
+    }
+    if(onNote)h+='<p class="okm">'+esc(onNote)+'</p>';
+    if(onErr)h+='<p class="err">'+esc(onErr)+'</p>';
+    h+='<button class="cta w" id="onClose">'+t.home+'</button>';
+  }
+  $("onBody").innerHTML=h;
+  function on(id,fn){var e=$(id);if(e)e.addEventListener("click",function(){sfx("tap");fn()})}
+  function grab(){var e=$("onName");if(e)setName(e.value);if(!myName){onErr=L().errName;renderOnline();var x=$("onName");if(x)x.focus();return false}return true}
+  on("onSign",function(){var e=$("onName");if(e)setName(e.value);signIn($("onCc").value,$("onPh").value)});
+  on("onOut",signOut);
+  on("onCreate",function(){if(grab())createRoom()});
+  on("onJoin",function(){var c=$("onCode").value;if(grab())joinRoom(c)});
+  on("onShare",shareRoom);
+  on("onLeave",function(){leaveRoom();onErr="";renderOnline()});
+  on("onClose",function(){onErr="";onNote="";$("ovOnline").classList.remove("on")});
+  if(netBusy)busyNet(true);
+}
+
+/* ---------- board and pieces ---------- */
+var holes=[],els={};
+function build(){
+  var hb=$("holes");
+  for(var i=0;i<N;i++)(function(i){
+    var b=document.createElement("button");b.className="hole";b.setAttribute("aria-label",(Math.floor(i/C)+1)+"-"+(i%C+1));
+    b.addEventListener("click",function(){onCell(i)});hb.appendChild(b);holes.push(b);
+  })(i);
+  for(var p=1;p<=2;p++){var h="";for(var k=0;k<12;k++)h+="<i></i>";$("r"+p).innerHTML=h}
+}
+function pos(e,i){e.style.left=(i%C)*16.6667+"%";e.style.top=Math.floor(i/C)*20+"%"}
+function makePiece(p,i){
+  var e=document.createElement("div");e.className="pc p"+p+" in";e.dataset.p=p;e.innerHTML="<i></i>";pos(e,i);
+  $("pieces").appendChild(e);setTimeout(function(){e.classList.remove("in")},420);return e;
+}
+function puff(i,red){var d=document.createElement("div");d.className="puff"+(red?" red":"");pos(d,i);$("pieces").appendChild(d);setTimeout(function(){d.remove()},560)}
+function killPiece(e,i){e.classList.remove("target","sel");e.classList.add("gone");puff(i,true);setTimeout(function(){e.remove()},460)}
+function clearPieces(){$("pieces").innerHTML="";els={}}
+// Brings the pieces on screen in line with the position, sliding the piece that just moved.
+function syncPieces(fx){
+  var i,e,want;
+  if(fx&&fx.from>=0&&els[fx.from]&&!els[fx.to]){
+    e=els[fx.from];delete els[fx.from];els[fx.to]=e;pos(e,fx.to);
+    if(fx.k==="cap"){e.classList.add("hop");(function(e){setTimeout(function(){e.classList.remove("hop")},420)})(e)}
+  }
+  for(i=0;i<N;i++){
+    want=S.b[i];e=els[i];
+    if(e&&+e.dataset.p!==want){killPiece(e,i);delete els[i];e=null}
+    if(want&&!e){els[i]=makePiece(want,i);puff(i)}
+  }
+}
+function nm(p){
+  if(mode==="net"){var s=seatAt(net&&net.room,p-1);return s?String(s.name).slice(0,12):L()["p"+p]}
+  if(p===1)return myName||L().p1;
+  return mode==="ai"?L().cpuN:L().p2;
+}
+function iPlay(){ // may this phone act now?
+  if(!S||S.over||busy)return false;
+  if(mode==="net")return S.turn===me();
+  if(mode==="ai")return S.turn===1;
+  return true;
+}
+var lastStatus="";
+function render(){
+  if(!S)return;
+  var i,k,p=S.turn,o=3-p,dest={},list,cls,t=L(),mine=iPlay();
+  if(sel>=0&&S.phase==="play"&&mine){list=actions(S.b,S.hand,p,sel);for(k=0;k<list.length;k++)dest[list[k].to]=list[k].k}
+  for(i=0;i<N;i++){
+    cls="hole";if(dest[i])cls+=dest[i]==="cap"?" cap":" dest";if(i===S.last&&S.b[i])cls+=" last";
+    holes[i].className=cls;
+    if(els[i]){
+      els[i].classList.toggle("sel",i===sel);
+      els[i].classList.toggle("target",S.phase==="bonus"&&!S.over&&mine&&S.b[i]===o);
+    }
+  }
+  for(k=1;k<=2;k++){
+    $("n"+k).textContent=nm(k)+(mode==="net"&&k===me()?" ("+t.you+")":"");
+    $("s"+k).textContent=t.hand+" : "+S.hand[k]+" · "+t.cap+" : "+S.capd[k];
+    var dots=$("r"+k).children;for(i=0;i<12;i++)dots[i].className=i<S.hand[k]?"":"off";
+    $("w"+k).textContent=S.wins[k];
+    $("pl"+k).classList.toggle("on",!S.over&&S.turn===k);
+  }
+  var st=$("status"),txt,c="";
+  if(S.over)txt=S.over.w?t.win(nm(S.over.w)):t.draw;
+  else if(S.phase==="bonus"){txt=mine?t.bonusYou:t.bonus(nm(p));c="bonus"}
+  else if(mode==="ai"&&p===2)txt=t.think(nm(2));
+  else if(mode==="net"){if(mine){txt=t.yours;c="mine"}else txt=t.waitOpp(nm(p))}
+  else txt=t.turn(nm(p));
+  if(txt+c!==lastStatus){lastStatus=txt+c;st.className=c;st.innerHTML="<span>"+esc(txt)+"</span>"}
+  $("gUndo").disabled=mode==="net"||!hist.length||busy;
+  $("gUndo").style.display=mode==="net"?"none":"";
+}
+
+/* ---------- playing ---------- */
+function snap(){return JSON.stringify(S)}
+function commit(){ // after any change made on this phone
+  sfx(S.fx.k);syncPieces(S.fx);render();
+  if(mode==="net")push();
+  if(S.over)finishUI();else maybeAI();
+}
+function onCell(i){
+  if(!iPlay())return;
+  var p=S.turn,o=3-p,a=null,list,k;
+  if(S.phase==="bonus"){if(S.b[i]===o){doBonus(i);endTurn();commit()}return}
+  if(S.b[i]===p){sel=sel===i?-1:i;sfx("tap");render();return}
+  if(sel>=0){
+    list=actions(S.b,S.hand,p,sel);
+    for(k=0;k<list.length;k++)if(list[k].to===i)a=list[k];
+    sel=-1;
+    if(!a){render();return}
+    hist.push(snap());
+    if(doAction(a))S.phase="bonus";else endTurn();
+    commit();return;
+  }
+  if(S.b[i]===0&&S.hand[p]>0){hist.push(snap());doAction({k:"place",from:-1,over:-1,to:i});endTurn();commit()}
+}
+function undo(){
+  if(!hist.length||busy||mode==="net")return;
+  gid++;S=JSON.parse(hist.pop());sel=-1;closeAll();syncPieces(null);render();
+}
+function startLocal(m){
+  leaveRoom();mode=m;gid++;busy=false;hist=[];sel=-1;starter=1;
+  S=fresh(1,[0,0,0]);clearPieces();lastStatus="";show("game");render();
+}
+function nextLocal(){
+  gid++;busy=false;hist=[];sel=-1;starter=3-starter;
+  S=fresh(starter,S.wins.slice());clearPieces();closeAll();render();maybeAI();
+}
+function finishUI(){
+  var t=L(),w=S.over.w,mineWin=mode==="net"?w===me():mode==="ai"?w===1:!!w,g=gid;
+  render();
+  setTimeout(function(){
+    if(g!==gid||!S||!S.over)return;
+    if(w&&mineWin){sfx("win");confetti()}else sfx("lose");
+    $("enI").textContent=!w?"🤝":mineWin?"🏆":"🌴";
+    $("enT").textContent=!w?t.draw:(mode!=="2p"&&mineWin)?t.youWin:t.win(nm(w));
+    $("enS").textContent=t[S.over.why]||"";
+    $("ovEnd").classList.add("on");
+  },750);
+}
+function confetti(){
+  var box=$("confetti"),cols=["#00853f","#fdef42","#e31b23","#fff"],i,e;
+  for(i=0;i<46;i++){e=document.createElement("i");e.style.left=Math.random()*100+"%";e.style.background=cols[i%4];
+    e.style.animationDuration=1.6+Math.random()*1.6+"s";e.style.animationDelay=Math.random()*.5+"s";box.appendChild(e)}
+  setTimeout(function(){box.innerHTML=""},4200);
+}
+
+/* ---------- computer player ---------- */
+function score(b,hand,p){
+  var o=3-p,mine=hand[p]+cnt(b,p),theirs=hand[o]+cnt(b,o);
+  if(theirs===0)return 1000;
+  var oa=actions(b,hand,o);if(!oa.length)return 900;
+  var threat=0,k;
+  for(k=0;k<oa.length;k++)if(oa[k].k==="cap"){threat=mine>=2?2:1;break}
+  var next=0,ma=actions(b,hand,p);
+  for(k=0;k<ma.length;k++)if(ma[k].k==="cap"){next=.5;break}
+  return (mine-theirs)-threat*1.1+next+hand[p]*.03+Math.random()*.25;
+}
+function aiPick(){
+  var p=S.turn,o=3-p,list=actions(S.b,S.hand,p),best=null,bs=-1e9,k,i,b,h,s,a;
+  function take(a,bonus){if(s>bs){bs=s;best={a:a,bonus:bonus}}}
+  for(k=0;k<list.length;k++){
+    a=list[k];b=S.b.slice();h=S.hand.slice();
+    if(a.k==="place"){b[a.to]=p;h[p]--;s=score(b,h,p);take(a,-1);continue}
+    b[a.from]=0;b[a.to]=p;
+    if(a.k==="move"){s=score(b,h,p);take(a,-1);continue}
+    b[a.over]=0;
+    if(cnt(b,o)===0){if(h[o]>0)h[o]--;s=score(b,h,p);take(a,-1);continue}
+    for(i=0;i<N;i++)if(b[i]===o){b[i]=0;s=score(b,h,p);b[i]=o;take(a,i)}
+  }
+  return best;
+}
+function maybeAI(){
+  if(mode!=="ai"||!S||S.over||S.turn!==2)return;
+  busy=true;render();var g=gid;
+  setTimeout(function(){
+    if(g!==gid)return;
+    var m=aiPick();if(!m){busy=false;return}
+    if(doAction(m.a)){
+      S.phase="bonus";sfx(S.fx.k);syncPieces(S.fx);render();
+      setTimeout(function(){if(g!==gid)return;doBonus(m.bonus);endTurn();busy=false;commit()},700);
+    }else{endTurn();busy=false;commit()}
+  },800);
+}
+
+/* ---------- screens, sheets, wiring ---------- */
+function show(id){$("home").classList.toggle("on",id==="home");$("game").classList.toggle("on",id==="game")}
+function closeAll(){["ovOnline","ovRules","ovMenu","ovEnd"].forEach(function(x){$(x).classList.remove("on")})}
+function applyLang(){
+  var t=L();document.documentElement.lang=lang;
+  $("tag").textContent=t.tag;$("hOnlineT").textContent=t.online;$("hOnlineS").textContent=t.onlineS;$("h2pT").textContent=t.local;$("h2pS").textContent=t.localS;
+  $("hAiT").textContent=t.cpu;$("hAiS").textContent=t.cpuS;$("hRules").textContent="📖 "+t.rules;$("gRules").textContent="📖 "+t.rules;$("gUndo").textContent=t.undo;
+  $("ruT").textContent=t.rules;$("ruB").innerHTML=t.rb;$("ruX").textContent=t.close;$("mnT").textContent=t.menu;$("mnBack").textContent=t.back;$("mnQuit").textContent=t.quit;
+  $("enAgain").textContent=t.again;$("enHome").textContent=t.home;$("gSound").textContent=sound?"🔊":"🔇";
+  var b=$("mnLang").children;for(var i=0;i<b.length;i++)b[i].classList.toggle("on",b[i].dataset.l===lang);
+  lastStatus="";render();if($("ovOnline").classList.contains("on"))renderOnline();
+}
+function click(id,fn){$(id).addEventListener("click",function(e){sfx("tap");fn(e)})}
+build();
+click("hOnline",function(){onErr="";onNote="";openOnline()});
+click("h2p",function(){startLocal("2p")});
+click("hAi",function(){startLocal("ai")});
+click("hRules",function(){$("ovRules").classList.add("on")});
+click("gRules",function(){$("ovRules").classList.add("on")});
+click("ruX",function(){$("ovRules").classList.remove("on")});
+click("gMenu",function(){$("ovMenu").classList.add("on")});
+click("mnBack",function(){$("ovMenu").classList.remove("on")});
+click("mnQuit",function(){goHome()});
+click("gUndo",undo);
+$("gSound").addEventListener("click",function(){sound=!sound;lset("yote-sound",sound?"1":"0");$("gSound").textContent=sound?"🔊":"🔇";sfx("tap")});
+$("mnLang").addEventListener("click",function(e){var l=e.target.dataset.l;if(l){lang=l;lset("yote-lang",l);applyLang()}});
+click("enAgain",function(){$("ovEnd").classList.remove("on");if(mode==="net")startRound();else nextLocal()});
+click("enHome",function(){goHome()});
+function goHome(){gid++;closeAll();if(net)leaveRoom();mode="";S=null;show("home")}
+["ovRules","ovMenu"].forEach(function(id){$(id).addEventListener("click",function(e){if(e.target===$(id))$(id).classList.remove("on")})});
+applyLang();
+
+// Pick up a game in progress, or an invitation link.
+if(DB){
+  var saved=lget("yote-room");
+  if(pendingCode){if(myName&&(acct||acctOff))joinRoom(pendingCode);else openOnline()}
+  else if(saved&&/^[A-Z0-9]{6}$/.test(saved))joinRoom(saved,true);
+}
+document.addEventListener("visibilitychange",function(){
+  if(document.hidden||!net)return;var n=net;
+  api("GET","").then(function(r){if(net!==n||!r)return;net.room=r;onRoom()}).catch(function(){});
+});
+
+/* ---------- updates and offline ---------- */
+function checkUpdate(){
+  if(location.protocol!=="https:")return;
+  fetch("version.txt?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(v){
+    v=String(v).trim();if(!v||v===BUILD||!/^\d+$/.test(v))return;
+    $("updT").textContent=L().upd;$("updGo").textContent=L().updGo;$("upd").classList.add("on");
+  }).catch(function(){});
+}
+$("updGo").addEventListener("click",function(){
+  var go=function(){location.reload()};
+  try{if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(function(r){return r?r.update():null}).then(go,go);else go()}catch(e){go()}
+});
+setTimeout(checkUpdate,3000);
+try{if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}catch(e){}
+})();
+</script>
+</body>
+</html>
