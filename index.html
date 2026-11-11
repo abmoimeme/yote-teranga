@@ -258,7 +258,7 @@ select.fld{width:auto;flex:none;padding:0 8px}
 <script>
 (function(){
 "use strict";
-var BUILD="1";
+var BUILD="2";
 var R=5,C=6,N=30,DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
 var $=function(id){return document.getElementById(id)};
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
@@ -416,7 +416,12 @@ function normPhone(cc,raw){
   else if(full.indexOf("33")===0)ok=full.length===11;
   else if(full.indexOf("39")===0)ok=full.length>=11&&full.length<=13;
   else if(full.charAt(0)==="1")ok=full.length===11;
-  return ok?"+"+full:"";
+  if(ok)return "+"+full;
+  // The country box may be on the wrong country: a number that can only be a US or Canada number is read as one.
+  var d0=raw.replace(/\D/g,""),tz="";try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||""}catch(e){}
+  if(d0.length===11&&d0.charAt(0)==="1")return "+"+d0;
+  if(d0.length===10&&/^[2-9]/.test(d0)&&(d0.charAt(0)!=="3"||tz.indexOf("America/")===0))return "+1"+d0;
+  return "";
 }
 // Same scrambling as Ludo Teranga, so one phone number is one account in both games.
 function scramble(s){
