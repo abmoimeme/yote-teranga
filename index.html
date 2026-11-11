@@ -137,6 +137,15 @@ input,select{font-family:inherit;-webkit-user-select:text;user-select:text}
 .puff::before{content:"";position:absolute;inset:15%;border-radius:50%;border:4px solid rgba(255,236,190,.95);animation:puff .5s ease-out forwards}
 .puff.red::before{border-color:rgba(227,27,35,.85)}
 @keyframes puff{from{transform:scale(.3);opacity:1}to{transform:scale(1.7);opacity:0}}
+.sp{margin-top:8px}
+.spl{display:block;text-align:center;font-size:10.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink-2);margin-bottom:4px}
+.spr{display:flex;gap:7px}
+.spr div{flex:1;min-width:0;height:44px;background:#fff;border-radius:11px;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 7px;box-shadow:0 2px 0 var(--sand-d)}
+.spr img{max-width:100%;max-height:100%;object-fit:contain;display:block;min-width:0}
+.spr b{font-family:var(--display);font-weight:800;font-size:12px;line-height:1;color:#2c4a2c;white-space:nowrap}
+#home .sp{margin-top:12px}
+#game .sp{margin-top:auto}
+#game .bar{margin-top:0}
 .bar{display:flex;gap:8px;margin-top:auto}
 .bar .cta{flex:1;min-height:48px;font-size:17px;justify-content:center;animation:none}
 .bar .cta:disabled{opacity:.4}
@@ -179,6 +188,7 @@ select.fld{width:auto;flex:none;padding:0 8px}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01s !important;transition-duration:.01s !important}}
 @media (max-height:640px){.brand h1{font-size:58px}.cta{min-height:50px}.brand{margin-top:1vh}}
+@media (max-height:700px){#home .sp .spl{display:none}.spr div{height:38px}}
 </style>
 </head>
 <body>
@@ -214,6 +224,7 @@ select.fld{width:auto;flex:none;padding:0 8px}
       <button class="cta r" id="hAi"><span class="ic">🧠</span><span><span id="hAiT"></span><small id="hAiS"></small></span></button>
       <button class="cta w" id="hRules"></button>
     </div>
+    <div class="sp"><span class="spl"></span><div class="spr"><div><img src="icons/sp-nf.png" alt="Nioro Farms"><b>Nioro Farms</b></div><div><img src="icons/sp-jv.png" alt="Jollof Ventures"></div><div><img src="icons/sp-pah.png" alt="Planet Auto Hub"></div></div></div>
     <div class="foot">© 2026 Nioro Resources LLC</div>
   </div>
 </section>
@@ -232,6 +243,7 @@ select.fld{width:auto;flex:none;padding:0 8px}
     <div class="frame"><div class="wax"></div><div class="pit"><div id="board"><div id="holes"></div><div id="pieces"></div></div></div><div class="wax"></div></div>
     <div class="pl" id="pl1"><div class="tk"><div class="pc p1" style="position:absolute;inset:0;width:auto;height:auto"><i style="inset:8%"></i></div></div>
       <div class="info"><div class="nm" id="n1"></div><div class="sub" id="s1"></div></div><div class="res" id="r1"></div><div class="wn" id="w1">0</div></div>
+    <div class="sp"><span class="spl"></span><div class="spr"><div><img src="icons/sp-nf.png" alt="Nioro Farms"><b>Nioro Farms</b></div><div><img src="icons/sp-jv.png" alt="Jollof Ventures"></div><div><img src="icons/sp-pah.png" alt="Planet Auto Hub"></div></div></div>
     <div class="bar">
       <button class="cta w" id="gUndo"></button>
       <button class="cta w" id="gRules"></button>
@@ -249,7 +261,7 @@ select.fld{width:auto;flex:none;padding:0 8px}
 </div></div></div>
 <div class="ov" id="ovEnd"><div class="sheet"><div class="wax"></div><div class="bd center">
   <div class="trophy" id="enI"></div><h3 id="enT"></h3><p id="enS"></p>
-  <button class="cta g" id="enAgain"></button><button class="cta w" id="enHome"></button>
+  <div class="sp"><span class="spl"></span><div class="spr"><div><img src="icons/sp-nf.png" alt="Nioro Farms"><b>Nioro Farms</b></div><div><img src="icons/sp-jv.png" alt="Jollof Ventures"></div><div><img src="icons/sp-pah.png" alt="Planet Auto Hub"></div></div></div><button class="cta g" id="enAgain"></button><button class="cta w" id="enHome"></button>
 </div></div></div>
 <div id="upd"><span id="updT"></span><button id="updGo"></button></div>
 <div id="confetti"></div>
@@ -258,7 +270,7 @@ select.fld{width:auto;flex:none;padding:0 8px}
 <script>
 (function(){
 "use strict";
-var BUILD="2";
+var BUILD="3";
 var R=5,C=6,N=30,DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
 var $=function(id){return document.getElementById(id)};
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
@@ -831,6 +843,7 @@ function applyLang(){
   $("tag").textContent=t.tag;$("hOnlineT").textContent=t.online;$("hOnlineS").textContent=t.onlineS;$("h2pT").textContent=t.local;$("h2pS").textContent=t.localS;
   $("hAiT").textContent=t.cpu;$("hAiS").textContent=t.cpuS;$("hRules").textContent="📖 "+t.rules;$("gRules").textContent="📖 "+t.rules;$("gUndo").textContent=t.undo;
   $("ruT").textContent=t.rules;$("ruB").innerHTML=t.rb;$("ruX").textContent=t.close;$("mnT").textContent=t.menu;$("mnBack").textContent=t.back;$("mnQuit").textContent=t.quit;
+  var sl=document.querySelectorAll(".spl");for(var q=0;q<sl.length;q++)sl[q].textContent=lang==="it"?"Sponsor":"Sponsors";
   $("enAgain").textContent=t.again;$("enHome").textContent=t.home;$("gSound").textContent=sound?"🔊":"🔇";
   var b=$("mnLang").children;for(var i=0;i<b.length;i++)b[i].classList.toggle("on",b[i].dataset.l===lang);
   lastStatus="";render();if($("ovOnline").classList.contains("on"))renderOnline();
